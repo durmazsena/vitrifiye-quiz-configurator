@@ -1,23 +1,23 @@
 [build]
   command = "pnpm build"
   publish = "dist/public"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20"
   PNPM_VERSION = "10.4.1"
 
-# Redirect all requests to index.html for SPA routing
+# API routes - Netlify Functions için (öncelikli, SPA routing'den önce)
+[[redirects]]
+  from = "/api/trpc/*"
+  to = "/.netlify/functions/trpc"
+  status = 200
+
+# Redirect all other requests to index.html for SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-# API routes - Netlify Functions için (opsiyonel, şu an Express server kullanıyoruz)
-# Eğer Netlify Functions kullanmak isterseniz, bu kısmı aktif edebilirsiniz
-# [[redirects]]
-#   from = "/api/*"
-#   to = "/.netlify/functions/:splat"
-#   status = 200
 
 # Headers for security
 [[headers]]
