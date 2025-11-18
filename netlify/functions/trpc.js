@@ -200,20 +200,64 @@ var _nextConfigurationId = 1;
 function loadJsonData() {
   if (!_jsonData) {
     try {
-      const shopifyFilePath = join(process.cwd(), "data", "shopify-products.json");
+      const possiblePaths = [
+        process.cwd(),
+        // Normal server
+        join(process.cwd(), ".."),
+        // Netlify Functions (one level up)
+        join(process.cwd(), "../.."),
+        // Netlify Functions (two levels up)
+        "/var/task",
+        // AWS Lambda / Netlify Functions default
+        join("/var/task", "..")
+        // Netlify Functions alternative
+      ];
+      let shopifyFilePath = null;
+      let exportedFilePath = null;
+      for (const basePath of possiblePaths) {
+        const testPath = join(basePath, "data", "shopify-products.json");
+        try {
+          readFileSync(testPath, "utf-8");
+          shopifyFilePath = testPath;
+          break;
+        } catch {
+          const altPath = join(basePath, "shopify-products.json");
+          try {
+            readFileSync(altPath, "utf-8");
+            shopifyFilePath = altPath;
+            break;
+          } catch {
+            continue;
+          }
+        }
+      }
+      for (const basePath of possiblePaths) {
+        const testPath = join(basePath, "exported-products.json");
+        try {
+          readFileSync(testPath, "utf-8");
+          exportedFilePath = testPath;
+          break;
+        } catch {
+          continue;
+        }
+      }
+      if (!shopifyFilePath || !exportedFilePath) {
+        throw new Error(`JSON files not found. Shopify: ${shopifyFilePath}, Exported: ${exportedFilePath}`);
+      }
       const shopifyContent = readFileSync(shopifyFilePath, "utf-8");
       const shopifyData = JSON.parse(shopifyContent);
-      const exportedFilePath = join(process.cwd(), "exported-products.json");
       const exportedContent = readFileSync(exportedFilePath, "utf-8");
       const exportedProducts = JSON.parse(exportedContent);
       _jsonData = {
         products: exportedProducts,
         quiz_questions: shopifyData.quiz_questions || []
       };
-      console.log(`[Data] Loaded ${exportedProducts.length} products from exported-products.json`);
-      console.log(`[Data] Loaded ${_jsonData.quiz_questions.length} quiz questions from shopify-products.json`);
+      console.log(`[Data] Loaded ${exportedProducts.length} products from ${exportedFilePath}`);
+      console.log(`[Data] Loaded ${_jsonData.quiz_questions.length} quiz questions from ${shopifyFilePath}`);
     } catch (error) {
       console.error("[Data] Failed to load JSON data:", error);
+      console.error("[Data] Current working directory:", process.cwd());
+      console.error("[Data] __dirname equivalent:", import.meta.url);
       _jsonData = { products: [], quiz_questions: [] };
     }
   }
