@@ -8,10 +8,12 @@
   PNPM_VERSION = "10.4.1"
 
 # API routes - Netlify Functions için (öncelikli, SPA routing'den önce)
+# Path'i query string olarak geçir
 [[redirects]]
   from = "/api/trpc/*"
-  to = "/.netlify/functions/trpc"
+  to = "/.netlify/functions/trpc/:splat"
   status = 200
+  force = true
 
 # Redirect all other requests to index.html for SPA routing
 [[redirects]]

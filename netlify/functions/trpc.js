@@ -47710,7 +47710,7 @@ var app = (0, import_express.default)();
 app.use(import_express.default.json({ limit: "50mb" }));
 app.use(import_express.default.urlencoded({ limit: "50mb", extended: true }));
 app.use(
-  "/*",
+  "/api/trpc",
   createExpressMiddleware({
     router: appRouter,
     createContext
@@ -47718,12 +47718,50 @@ app.use(
 );
 var serverlessHandler = (0, import_serverless_http.default)(app);
 var handler = async (event, context) => {
-  const result = await serverlessHandler(event, context);
-  return {
-    statusCode: result.statusCode || 200,
-    headers: result.headers || {},
-    body: result.body || ""
+  console.log("[Netlify Function] Request received:", {
+    path: event.path,
+    rawPath: event.rawPath,
+    queryString: event.queryStringParameters,
+    httpMethod: event.httpMethod
+  });
+  let path = event.path;
+  if (path.startsWith("/.netlify/functions/trpc")) {
+    const remainingPath = path.replace("/.netlify/functions/trpc", "");
+    path = `/api/trpc${remainingPath}`;
+    console.log("[Netlify Function] Path converted:", path);
+  }
+  const modifiedEvent = {
+    ...event,
+    path,
+    rawPath: path,
+    requestContext: {
+      ...event.requestContext,
+      path,
+      http: {
+        ...event.requestContext?.http,
+        path
+      }
+    }
   };
+  try {
+    const result = await serverlessHandler(modifiedEvent, context);
+    console.log("[Netlify Function] Response:", {
+      statusCode: result.statusCode,
+      headers: Object.keys(result.headers || {})
+    });
+    return {
+      statusCode: result.statusCode || 200,
+      headers: result.headers || {},
+      body: result.body || ""
+    };
+  } catch (error46) {
+    console.error("[Netlify Function] Error:", error46);
+    return {
+      statusCode: 500,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: "Internal server error", message: error46 instanceof Error ? error46.message : String(error46) })
+    };
+  }
 };
 export {
   handler
