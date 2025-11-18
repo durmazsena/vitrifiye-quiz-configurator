@@ -1,5 +1,6 @@
 import { readFileSync } from "fs";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import { 
   InsertUser, 
   Product,
@@ -11,6 +12,11 @@ import {
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
+
+// ESM'de __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 // JSON data cache
 let _jsonData: any = null;
 let _productsCache: Product[] | null = null;
@@ -20,20 +26,47 @@ let _nextQuizResultId = 1;
 let _configurationsStorage: Map<number, Configuration> = new Map();
 let _nextConfigurationId = 1;
 
-function loadJsonData() {
+async function loadJsonDataAsync() {
   if (!_jsonData) {
     try {
       console.log("[Data] Starting to load JSON data...");
+      
+      // First, try to load embedded data (for Netlify Functions bundle)
+      await loadEmbeddedData();
+      
+      // Check if embedded data is available
+      if (embeddedData?.shopify && embeddedData?.exported) {
+        console.log("[Data] Using embedded JSON data from bundle");
+        _jsonData = {
+          products: embeddedData.exported,
+          quiz_questions: embeddedData.shopify.quiz_questions || [],
+        };
+        console.log(`[Data] ✅ Loaded ${embeddedData.exported.length} products from embedded data`);
+        console.log(`[Data] ✅ Loaded ${_jsonData.quiz_questions.length} quiz questions from embedded data`);
+        return _jsonData;
+      }
+      
+      // Fallback: Try to load from file system
+      console.log("[Data] Embedded data not available, trying file system...");
       console.log("[Data] Current working directory:", process.cwd());
+      console.log("[Data] __dirname:", __dirname);
+      console.log("[Data] import.meta.url:", import.meta.url);
       
       // Try multiple possible paths for Netlify Functions compatibility
       const possiblePaths = [
+        __dirname, // Current file's directory (most reliable)
+        join(__dirname, ".."), // One level up from current file
+        join(__dirname, "../.."), // Two levels up
+        join(__dirname, "../../.."), // Three levels up
         process.cwd(), // Normal server
         join(process.cwd(), ".."), // Netlify Functions (one level up)
         join(process.cwd(), "../.."), // Netlify Functions (two levels up)
         "/var/task", // AWS Lambda / Netlify Functions default
         join("/var/task", ".."), // Netlify Functions alternative
         join(process.cwd(), "netlify", "functions"), // Netlify Functions build directory
+        join(__dirname, "data"), // Data folder relative to current file
+        join(__dirname, "..", "data"), // Data folder one level up
+        join(__dirname, "../..", "data"), // Data folder two levels up
       ];
 
       let shopifyFilePath: string | null = null;
@@ -106,6 +139,78 @@ function loadJsonData() {
       _jsonData = { products: [], quiz_questions: [] };
     }
   }
+  return _jsonData;
+}
+
+// Synchronous wrapper for compatibility
+function loadJsonData() {
+  // Call async version and wait (this is a workaround for Netlify Functions)
+  // In practice, this will work because the first call will cache the data
+  if (!_jsonData) {
+    // Try to load synchronously first (for file system)
+    try {
+      const possiblePaths = [
+        __dirname,
+        join(__dirname, ".."),
+        join(__dirname, "../.."),
+        join(__dirname, "../../.."),
+        process.cwd(),
+        join(process.cwd(), ".."),
+        "/var/task",
+        join("/var/task", ".."),
+      ];
+      
+      let shopifyFilePath: string | null = null;
+      let exportedFilePath: string | null = null;
+      
+      for (const basePath of possiblePaths) {
+        const testPath = join(basePath, "data", "shopify-products.json");
+        try {
+          readFileSync(testPath, "utf-8");
+          shopifyFilePath = testPath;
+          break;
+        } catch {
+          const altPath = join(basePath, "shopify-products.json");
+          try {
+            readFileSync(altPath, "utf-8");
+            shopifyFilePath = altPath;
+            break;
+          } catch {
+            continue;
+          }
+        }
+      }
+      
+      for (const basePath of possiblePaths) {
+        const testPath = join(basePath, "exported-products.json");
+        try {
+          readFileSync(testPath, "utf-8");
+          exportedFilePath = testPath;
+          break;
+        } catch {
+          continue;
+        }
+      }
+      
+      if (shopifyFilePath && exportedFilePath) {
+        const shopifyData = JSON.parse(readFileSync(shopifyFilePath, "utf-8"));
+        const exportedProducts = JSON.parse(readFileSync(exportedFilePath, "utf-8"));
+        _jsonData = {
+          products: exportedProducts,
+          quiz_questions: shopifyData.quiz_questions || [],
+        };
+        console.log(`[Data] ✅ Loaded ${exportedProducts.length} products from ${exportedFilePath}`);
+        console.log(`[Data] ✅ Loaded ${_jsonData.quiz_questions.length} quiz questions from ${shopifyFilePath}`);
+        return _jsonData;
+      }
+    } catch (error) {
+      console.error("[Data] Synchronous load failed:", error);
+    }
+    
+    // If synchronous load failed, return empty (async will load later)
+    return { products: [], quiz_questions: [] };
+  }
+  
   return _jsonData;
 }
 

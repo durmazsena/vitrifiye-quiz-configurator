@@ -19097,7 +19097,7 @@ var require_view = __commonJS({
     var debug = require_src()("express:view");
     var path = __require("path");
     var fs = __require("fs");
-    var dirname = path.dirname;
+    var dirname2 = path.dirname;
     var basename = path.basename;
     var extname = path.extname;
     var join2 = path.join;
@@ -19136,7 +19136,7 @@ var require_view = __commonJS({
       for (var i = 0; i < roots.length && !path2; i++) {
         var root = roots[i];
         var loc = resolve(root, name);
-        var dir = dirname(loc);
+        var dir = dirname2(loc);
         var file2 = basename(loc);
         path2 = this.resolve(dir, file2);
       }
@@ -41674,7 +41674,10 @@ var systemRouter = router({
 
 // server/db.ts
 import { readFileSync } from "fs";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+var __filename = fileURLToPath(import.meta.url);
+var __dirname = dirname(__filename);
 var _jsonData = null;
 var _productsCache = null;
 var _quizQuestionsCache = null;
@@ -41685,81 +41688,60 @@ var _nextConfigurationId = 1;
 function loadJsonData() {
   if (!_jsonData) {
     try {
-      console.log("[Data] Starting to load JSON data...");
-      console.log("[Data] Current working directory:", process.cwd());
       const possiblePaths = [
+        __dirname,
+        join(__dirname, ".."),
+        join(__dirname, "../.."),
+        join(__dirname, "../../.."),
         process.cwd(),
-        // Normal server
         join(process.cwd(), ".."),
-        // Netlify Functions (one level up)
-        join(process.cwd(), "../.."),
-        // Netlify Functions (two levels up)
         "/var/task",
-        // AWS Lambda / Netlify Functions default
-        join("/var/task", ".."),
-        // Netlify Functions alternative
-        join(process.cwd(), "netlify", "functions")
-        // Netlify Functions build directory
+        join("/var/task", "..")
       ];
       let shopifyFilePath = null;
       let exportedFilePath = null;
-      console.log("[Data] Trying to find shopify-products.json...");
       for (const basePath of possiblePaths) {
         const testPath = join(basePath, "data", "shopify-products.json");
         try {
           readFileSync(testPath, "utf-8");
           shopifyFilePath = testPath;
-          console.log(`[Data] Found shopify-products.json at: ${testPath}`);
           break;
         } catch {
           const altPath = join(basePath, "shopify-products.json");
           try {
             readFileSync(altPath, "utf-8");
             shopifyFilePath = altPath;
-            console.log(`[Data] Found shopify-products.json at: ${altPath}`);
             break;
           } catch {
             continue;
           }
         }
       }
-      console.log("[Data] Trying to find exported-products.json...");
       for (const basePath of possiblePaths) {
         const testPath = join(basePath, "exported-products.json");
         try {
           readFileSync(testPath, "utf-8");
           exportedFilePath = testPath;
-          console.log(`[Data] Found exported-products.json at: ${testPath}`);
           break;
         } catch {
           continue;
         }
       }
-      if (!shopifyFilePath || !exportedFilePath) {
-        console.error(`[Data] JSON files not found.`);
-        console.error(`[Data] Shopify path: ${shopifyFilePath || "NOT FOUND"}`);
-        console.error(`[Data] Exported path: ${exportedFilePath || "NOT FOUND"}`);
-        console.error(`[Data] Tried paths:`, possiblePaths);
-        throw new Error(`JSON files not found. Shopify: ${shopifyFilePath}, Exported: ${exportedFilePath}`);
+      if (shopifyFilePath && exportedFilePath) {
+        const shopifyData = JSON.parse(readFileSync(shopifyFilePath, "utf-8"));
+        const exportedProducts = JSON.parse(readFileSync(exportedFilePath, "utf-8"));
+        _jsonData = {
+          products: exportedProducts,
+          quiz_questions: shopifyData.quiz_questions || []
+        };
+        console.log(`[Data] \u2705 Loaded ${exportedProducts.length} products from ${exportedFilePath}`);
+        console.log(`[Data] \u2705 Loaded ${_jsonData.quiz_questions.length} quiz questions from ${shopifyFilePath}`);
+        return _jsonData;
       }
-      console.log("[Data] Reading JSON files...");
-      const shopifyContent = readFileSync(shopifyFilePath, "utf-8");
-      const shopifyData = JSON.parse(shopifyContent);
-      const exportedContent = readFileSync(exportedFilePath, "utf-8");
-      const exportedProducts = JSON.parse(exportedContent);
-      _jsonData = {
-        products: exportedProducts,
-        quiz_questions: shopifyData.quiz_questions || []
-      };
-      console.log(`[Data] \u2705 Loaded ${exportedProducts.length} products from ${exportedFilePath}`);
-      console.log(`[Data] \u2705 Loaded ${_jsonData.quiz_questions.length} quiz questions from ${shopifyFilePath}`);
     } catch (error46) {
-      console.error("[Data] \u274C Failed to load JSON data:", error46);
-      console.error("[Data] Error details:", error46 instanceof Error ? error46.message : String(error46));
-      console.error("[Data] Current working directory:", process.cwd());
-      console.error("[Data] __dirname equivalent:", import.meta.url);
-      _jsonData = { products: [], quiz_questions: [] };
+      console.error("[Data] Synchronous load failed:", error46);
     }
+    return { products: [], quiz_questions: [] };
   }
   return _jsonData;
 }
