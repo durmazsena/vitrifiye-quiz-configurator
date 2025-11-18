@@ -41715,8 +41715,13 @@ async function loadEmbeddedData() {
 }
 loadEmbeddedData().catch(() => {
 });
-var __filename = fileURLToPath(import.meta.url);
-var __dirname = dirname(__filename);
+var __dirname;
+try {
+  const __filename = fileURLToPath(import.meta.url);
+  __dirname = dirname(__filename);
+} catch (error46) {
+  __dirname = process.cwd();
+}
 var _jsonData = null;
 var _productsCache = null;
 var _quizQuestionsCache = null;

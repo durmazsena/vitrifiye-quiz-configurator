@@ -41,9 +41,15 @@ async function loadEmbeddedData() {
 // Try to load embedded data immediately (non-blocking)
 loadEmbeddedData().catch(() => {});
 
-// ESM'de __dirname equivalent
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// ESM'de __dirname equivalent - with fallback for Netlify Functions
+let __dirname: string;
+try {
+  const __filename = fileURLToPath(import.meta.url);
+  __dirname = dirname(__filename);
+} catch (error) {
+  // Fallback for Netlify Functions where import.meta.url might be undefined
+  __dirname = process.cwd();
+}
 
 // JSON data cache
 let _jsonData: any = null;
