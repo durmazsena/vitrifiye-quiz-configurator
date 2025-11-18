@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch server/_core/index.ts",
-    "build": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && esbuild netlify/functions/trpc.ts --platform=node --packages=external --bundle --format=esm --outdir=netlify/functions && cp -r data netlify/functions/ && cp exported-products.json netlify/functions/",
+    "build": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist && esbuild netlify/functions/trpc.ts --platform=node --bundle --format=esm --outdir=netlify/functions --external:aws-sdk && cp -r data netlify/functions/ && cp exported-products.json netlify/functions/",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
     "format": "prettier --write .",
