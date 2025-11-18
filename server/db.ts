@@ -12,6 +12,34 @@ import {
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
+// Try to import embedded JSON data (for Netlify Functions bundle)
+let embeddedData: { shopify?: any; exported?: any[] } | null = null;
+let embeddedDataPromise: Promise<void> | null = null;
+
+async function loadEmbeddedData() {
+  if (embeddedData !== null) return; // Already loaded or failed
+  if (embeddedDataPromise) return embeddedDataPromise; // Already loading
+  
+  embeddedDataPromise = (async () => {
+    try {
+      // @ts-ignore - Dynamic import
+      const dbData = await import("./db-data.js");
+      embeddedData = {
+        shopify: dbData.embeddedShopifyData,
+        exported: dbData.embeddedExportedProducts,
+      };
+      console.log("[Data] ✅ Embedded JSON data loaded from bundle");
+    } catch (error) {
+      // Embedded data not available, will use file system
+      embeddedData = null;
+    }
+  })();
+  
+  return embeddedDataPromise;
+}
+
+// Try to load embedded data immediately (non-blocking)
+loadEmbeddedData().catch(() => {});
 
 // ESM'de __dirname equivalent
 const __filename = fileURLToPath(import.meta.url);
@@ -144,10 +172,32 @@ async function loadJsonDataAsync() {
 
 // Synchronous wrapper for compatibility
 function loadJsonData() {
-  // Call async version and wait (this is a workaround for Netlify Functions)
-  // In practice, this will work because the first call will cache the data
   if (!_jsonData) {
-    // Try to load synchronously first (for file system)
+    // First, try embedded data (for Netlify Functions bundle)
+    // Note: This will work if embeddedData was loaded, otherwise will fall back to file system
+    if (embeddedData?.shopify && embeddedData?.exported) {
+      console.log("[Data] Using embedded JSON data from bundle");
+      _jsonData = {
+        products: embeddedData.exported,
+        quiz_questions: embeddedData.shopify.quiz_questions || [],
+      };
+      console.log(`[Data] ✅ Loaded ${embeddedData.exported.length} products from embedded data`);
+      console.log(`[Data] ✅ Loaded ${_jsonData.quiz_questions.length} quiz questions from embedded data`);
+      return _jsonData;
+    }
+    
+    // Try to load embedded data if not already loaded (non-blocking)
+    loadEmbeddedData().then(() => {
+      if (embeddedData?.shopify && embeddedData?.exported && !_jsonData) {
+        console.log("[Data] Embedded data loaded, updating cache");
+        _jsonData = {
+          products: embeddedData.exported,
+          quiz_questions: embeddedData.shopify.quiz_questions || [],
+        };
+      }
+    }).catch(() => {});
+    
+    // Fallback: Try to load from file system
     try {
       const possiblePaths = [
         __dirname,
