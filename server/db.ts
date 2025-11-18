@@ -43,10 +43,15 @@ loadEmbeddedData().catch(() => {});
 
 // ESM'de __dirname equivalent - with fallback for Netlify Functions
 let __dirname: string;
-try {
-  const __filename = fileURLToPath(import.meta.url);
-  __dirname = dirname(__filename);
-} catch (error) {
+if (typeof import.meta !== 'undefined' && import.meta.url) {
+  try {
+    const __filename = fileURLToPath(import.meta.url);
+    __dirname = dirname(__filename);
+  } catch (error) {
+    // Fallback if fileURLToPath fails
+    __dirname = process.cwd();
+  }
+} else {
   // Fallback for Netlify Functions where import.meta.url might be undefined
   __dirname = process.cwd();
 }

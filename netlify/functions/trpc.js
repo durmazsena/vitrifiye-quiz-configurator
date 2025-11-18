@@ -41716,10 +41716,14 @@ async function loadEmbeddedData() {
 loadEmbeddedData().catch(() => {
 });
 var __dirname;
-try {
-  const __filename = fileURLToPath(import.meta.url);
-  __dirname = dirname(__filename);
-} catch (error46) {
+if (typeof import.meta !== "undefined" && import.meta.url) {
+  try {
+    const __filename = fileURLToPath(import.meta.url);
+    __dirname = dirname(__filename);
+  } catch (error46) {
+    __dirname = process.cwd();
+  }
+} else {
   __dirname = process.cwd();
 }
 var _jsonData = null;
