@@ -23,6 +23,9 @@ let _nextConfigurationId = 1;
 function loadJsonData() {
   if (!_jsonData) {
     try {
+      console.log("[Data] Starting to load JSON data...");
+      console.log("[Data] Current working directory:", process.cwd());
+      
       // Try multiple possible paths for Netlify Functions compatibility
       const possiblePaths = [
         process.cwd(), // Normal server
@@ -30,17 +33,20 @@ function loadJsonData() {
         join(process.cwd(), "../.."), // Netlify Functions (two levels up)
         "/var/task", // AWS Lambda / Netlify Functions default
         join("/var/task", ".."), // Netlify Functions alternative
+        join(process.cwd(), "netlify", "functions"), // Netlify Functions build directory
       ];
 
       let shopifyFilePath: string | null = null;
       let exportedFilePath: string | null = null;
 
+      console.log("[Data] Trying to find shopify-products.json...");
       // Find shopify-products.json
       for (const basePath of possiblePaths) {
         const testPath = join(basePath, "data", "shopify-products.json");
         try {
           readFileSync(testPath, "utf-8");
           shopifyFilePath = testPath;
+          console.log(`[Data] Found shopify-products.json at: ${testPath}`);
           break;
         } catch {
           // Try alternative location
@@ -48,6 +54,7 @@ function loadJsonData() {
           try {
             readFileSync(altPath, "utf-8");
             shopifyFilePath = altPath;
+            console.log(`[Data] Found shopify-products.json at: ${altPath}`);
             break;
           } catch {
             continue;
@@ -55,12 +62,14 @@ function loadJsonData() {
         }
       }
 
+      console.log("[Data] Trying to find exported-products.json...");
       // Find exported-products.json
       for (const basePath of possiblePaths) {
         const testPath = join(basePath, "exported-products.json");
         try {
           readFileSync(testPath, "utf-8");
           exportedFilePath = testPath;
+          console.log(`[Data] Found exported-products.json at: ${testPath}`);
           break;
         } catch {
           continue;
@@ -68,9 +77,14 @@ function loadJsonData() {
       }
 
       if (!shopifyFilePath || !exportedFilePath) {
+        console.error(`[Data] JSON files not found.`);
+        console.error(`[Data] Shopify path: ${shopifyFilePath || "NOT FOUND"}`);
+        console.error(`[Data] Exported path: ${exportedFilePath || "NOT FOUND"}`);
+        console.error(`[Data] Tried paths:`, possiblePaths);
         throw new Error(`JSON files not found. Shopify: ${shopifyFilePath}, Exported: ${exportedFilePath}`);
       }
 
+      console.log("[Data] Reading JSON files...");
       const shopifyContent = readFileSync(shopifyFilePath, "utf-8");
       const shopifyData = JSON.parse(shopifyContent);
       
@@ -82,10 +96,11 @@ function loadJsonData() {
         quiz_questions: shopifyData.quiz_questions || [],
       };
       
-      console.log(`[Data] Loaded ${exportedProducts.length} products from ${exportedFilePath}`);
-      console.log(`[Data] Loaded ${_jsonData.quiz_questions.length} quiz questions from ${shopifyFilePath}`);
+      console.log(`[Data] ✅ Loaded ${exportedProducts.length} products from ${exportedFilePath}`);
+      console.log(`[Data] ✅ Loaded ${_jsonData.quiz_questions.length} quiz questions from ${shopifyFilePath}`);
     } catch (error) {
-      console.error("[Data] Failed to load JSON data:", error);
+      console.error("[Data] ❌ Failed to load JSON data:", error);
+      console.error("[Data] Error details:", error instanceof Error ? error.message : String(error));
       console.error("[Data] Current working directory:", process.cwd());
       console.error("[Data] __dirname equivalent:", import.meta.url);
       _jsonData = { products: [], quiz_questions: [] };
@@ -289,13 +304,19 @@ export async function getProductsByFilters(filters: {
 // ============ QUIZ QUESTIONS QUERIES ============
 
 export async function getAllQuizQuestions(): Promise<QuizQuestion[]> {
+  console.log("[Quiz] getAllQuizQuestions called");
   if (!_quizQuestionsCache) {
+    console.log("[Quiz] Loading quiz questions from JSON...");
     const jsonData = loadJsonData();
+    console.log(`[Quiz] Found ${jsonData.quiz_questions?.length || 0} questions in JSON`);
     _quizQuestionsCache = (jsonData.quiz_questions || []).map((q: any) => 
       convertJsonQuestionToQuizQuestion(q)
     ).sort((a: QuizQuestion, b: QuizQuestion) => a.order - b.order);
+    console.log(`[Quiz] Converted ${_quizQuestionsCache.length} quiz questions`);
   }
-  return _quizQuestionsCache.filter(q => q.isActive);
+  const activeQuestions = _quizQuestionsCache.filter(q => q.isActive);
+  console.log(`[Quiz] Returning ${activeQuestions.length} active quiz questions`);
+  return activeQuestions;
 }
 
 export async function getQuizQuestionsByCategory(category: string): Promise<QuizQuestion[]> {
