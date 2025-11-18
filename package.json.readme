@@ -1,0 +1,98 @@
+# Package.json Komutları
+
+Projenizde kullanabileceğiniz tüm komutlar:
+
+## Geliştirme
+
+```bash
+# Development server başlat (hot reload)
+pnpm dev
+
+# Alternatif: npm veya yarn ile
+npm run dev
+yarn dev
+```
+
+## Production
+
+```bash
+# Production build oluştur
+pnpm build
+
+# Production build'i önizle
+pnpm preview
+```
+
+## Database (Opsiyonel - sadece database modunda)
+
+```bash
+# Database schema'yı push et
+pnpm db:push
+
+# Database studio'yu aç (görsel yönetim)
+pnpm db:studio
+
+# Migration oluştur
+pnpm db:generate
+```
+
+## Type Checking
+
+```bash
+# TypeScript hatalarını kontrol et
+pnpm type-check
+```
+
+## Veri Yönetimi
+
+```bash
+# Seed data ekle (database modunda)
+node scripts/seed.mjs
+
+# JSON dosyasını doğrula
+node -e "console.log(JSON.parse(require('fs').readFileSync('./data/shopify-products.json')))"
+```
+
+## Temizlik
+
+```bash
+# node_modules ve cache'i temizle
+rm -rf node_modules pnpm-lock.yaml .turbo dist build
+pnpm install
+```
+
+## Port Değiştirme
+
+```bash
+# Farklı port kullan
+PORT=3001 pnpm dev
+
+# Windows
+set PORT=3001 && pnpm dev
+```
+
+## Environment Modları
+
+```bash
+# Development modu (varsayılan)
+NODE_ENV=development pnpm dev
+
+# Production modu
+NODE_ENV=production pnpm build
+pnpm preview
+```
+
+## Veri Kaynağı Değiştirme
+
+`.env.local` dosyasında:
+
+```env
+# JSON modu (Shopify olmadan)
+DATA_SOURCE="json"
+
+# Database modu (MySQL ile)
+DATA_SOURCE="database"
+
+# Shopify modu (gerçek mağaza)
+DATA_SOURCE="shopify"
+```

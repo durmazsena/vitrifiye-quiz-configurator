@@ -1,0 +1,519 @@
+{
+  "products": [
+    {
+      "id": "gid://shopify/Product/1",
+      "title": "Modern Beyaz Lavabo",
+      "handle": "modern-beyaz-lavabo",
+      "description": "Minimalist tasarım, yüksek kaliteli seramik",
+      "vendor": "Vitrifiye Premium",
+      "product_type": "Lavabo",
+      "tags": ["modern", "beyaz", "seramik", "banyo"],
+      "price": "1500.00",
+      "compare_at_price": "2000.00",
+      "sku": "LAV-MOD-001",
+      "inventory_quantity": 50,
+      "images": [
+        {
+          "src": "https://example.com/lavabo-modern-1.jpg",
+          "alt": "Modern Beyaz Lavabo"
+        }
+      ],
+      "metafields": {
+        "custom": {
+          "room_type": "banyo",
+          "style": "modern",
+          "color": "beyaz",
+          "material": "seramik",
+          "dimensions": "60x45x15 cm",
+          "installation_type": "tezgah_ustu",
+          "quiz_match_score": 0
+        }
+      }
+    },
+    {
+      "id": "gid://shopify/Product/2",
+      "title": "Klasik Altın Batarya",
+      "handle": "klasik-altin-batarya",
+      "description": "Vintage tarzı pirinç batarya",
+      "vendor": "Vitrifiye Premium",
+      "product_type": "Batarya",
+      "tags": ["klasik", "altin", "pirinc", "banyo"],
+      "price": "2500.00",
+      "compare_at_price": "3200.00",
+      "sku": "BAT-KLA-001",
+      "inventory_quantity": 30,
+      "images": [
+        {
+          "src": "https://example.com/batarya-klasik-1.jpg",
+          "alt": "Klasik Altın Batarya"
+        }
+      ],
+      "metafields": {
+        "custom": {
+          "room_type": "banyo",
+          "style": "klasik",
+          "color": "altin",
+          "material": "pirinc",
+          "finish": "parlak",
+          "type": "tek_kollu",
+          "quiz_match_score": 0
+        }
+      }
+    },
+    {
+      "id": "gid://shopify/Product/3",
+      "title": "Endüstriyel Siyah Duş Seti",
+      "handle": "endustriyel-siyah-dus-seti",
+      "description": "Mat siyah kaplama, modern endüstriyel tasarım",
+      "vendor": "Vitrifiye Premium",
+      "product_type": "Duş Seti",
+      "tags": ["endustriyel", "siyah", "mat", "dus"],
+      "price": "3500.00",
+      "compare_at_price": "4500.00",
+      "sku": "DUS-END-001",
+      "inventory_quantity": 25,
+      "images": [
+        {
+          "src": "https://example.com/dus-endustriyel-1.jpg",
+          "alt": "Endüstriyel Siyah Duş Seti"
+        }
+      ],
+      "metafields": {
+        "custom": {
+          "room_type": "banyo",
+          "style": "endustriyel",
+          "color": "siyah",
+          "material": "paslanmaz_celik",
+          "finish": "mat",
+          "includes": ["dus_basi", "el_dussu", "hortum"],
+          "quiz_match_score": 0
+        }
+      }
+    },
+    {
+      "id": "gid://shopify/Product/4",
+      "title": "Doğal Ahşap Banyo Dolabı",
+      "handle": "dogal-ahsap-banyo-dolabi",
+      "description": "Masif meşe ahşap, su geçirmez vernik",
+      "vendor": "Vitrifiye Premium",
+      "product_type": "Banyo Dolabı",
+      "tags": ["dogal", "ahsap", "mese", "dolap"],
+      "price": "5500.00",
+      "compare_at_price": "7000.00",
+      "sku": "DOL-DOG-001",
+      "inventory_quantity": 15,
+      "images": [
+        {
+          "src": "https://example.com/dolap-dogal-1.jpg",
+          "alt": "Doğal Ahşap Banyo Dolabı"
+        }
+      ],
+      "metafields": {
+        "custom": {
+          "room_type": "banyo",
+          "style": "dogal",
+          "color": "ahsap",
+          "material": "mese",
+          "dimensions": "80x50x45 cm",
+          "storage_type": "cekmeceli",
+          "quiz_match_score": 0
+        }
+      }
+    },
+    {
+      "id": "gid://shopify/Product/5",
+      "title": "Modern Gri Seramik Karo",
+      "handle": "modern-gri-seramik-karo",
+      "description": "60x60 cm mat gri seramik karo",
+      "vendor": "Vitrifiye Premium",
+      "product_type": "Karo",
+      "tags": ["modern", "gri", "seramik", "karo"],
+      "price": "45.00",
+      "compare_at_price": "60.00",
+      "sku": "KAR-MOD-001",
+      "inventory_quantity": 500,
+      "images": [
+        {
+          "src": "https://example.com/karo-gri-1.jpg",
+          "alt": "Modern Gri Seramik Karo"
+        }
+      ],
+      "metafields": {
+        "custom": {
+          "room_type": "banyo",
+          "style": "modern",
+          "color": "gri",
+          "material": "seramik",
+          "dimensions": "60x60 cm",
+          "finish": "mat",
+          "unit": "adet",
+          "quiz_match_score": 0
+        }
+      }
+    },
+    {
+      "id": "gid://shopify/Product/6",
+      "title": "Klasik Bej Mermer Karo",
+      "handle": "klasik-bej-mermer-karo",
+      "description": "Doğal mermer görünümlü porselen karo",
+      "vendor": "Vitrifiye Premium",
+      "product_type": "Karo",
+      "tags": ["klasik", "bej", "mermer", "karo"],
+      "price": "65.00",
+      "compare_at_price": "85.00",
+      "sku": "KAR-KLA-001",
+      "inventory_quantity": 400,
+      "images": [
+        {
+          "src": "https://example.com/karo-bej-1.jpg",
+          "alt": "Klasik Bej Mermer Karo"
+        }
+      ],
+      "metafields": {
+        "custom": {
+          "room_type": "banyo",
+          "style": "klasik",
+          "color": "bej",
+          "material": "porselen",
+          "dimensions": "60x60 cm",
+          "finish": "parlak",
+          "unit": "adet",
+          "quiz_match_score": 0
+        }
+      }
+    },
+    {
+      "id": "gid://shopify/Product/7",
+      "title": "Modern Beyaz Klozet",
+      "handle": "modern-beyaz-klozet",
+      "description": "Asma klozet, soft-close kapak",
+      "vendor": "Vitrifiye Premium",
+      "product_type": "Klozet",
+      "tags": ["modern", "beyaz", "asma", "klozet"],
+      "price": "2200.00",
+      "compare_at_price": "2800.00",
+      "sku": "KLO-MOD-001",
+      "inventory_quantity": 40,
+      "images": [
+        {
+          "src": "https://example.com/klozet-modern-1.jpg",
+          "alt": "Modern Beyaz Klozet"
+        }
+      ],
+      "metafields": {
+        "custom": {
+          "room_type": "banyo",
+          "style": "modern",
+          "color": "beyaz",
+          "material": "seramik",
+          "type": "asma",
+          "features": ["soft_close", "dual_flush"],
+          "quiz_match_score": 0
+        }
+      }
+    },
+    {
+      "id": "gid://shopify/Product/8",
+      "title": "Endüstriyel Metro Karo",
+      "handle": "endustriyel-metro-karo",
+      "description": "7.5x15 cm beyaz metro karo",
+      "vendor": "Vitrifiye Premium",
+      "product_type": "Karo",
+      "tags": ["endustriyel", "beyaz", "metro", "karo"],
+      "price": "25.00",
+      "compare_at_price": "35.00",
+      "sku": "KAR-END-001",
+      "inventory_quantity": 800,
+      "images": [
+        {
+          "src": "https://example.com/karo-metro-1.jpg",
+          "alt": "Endüstriyel Metro Karo"
+        }
+      ],
+      "metafields": {
+        "custom": {
+          "room_type": "banyo",
+          "style": "endustriyel",
+          "color": "beyaz",
+          "material": "seramik",
+          "dimensions": "7.5x15 cm",
+          "finish": "parlak",
+          "unit": "adet",
+          "quiz_match_score": 0
+        }
+      }
+    },
+    {
+      "id": "gid://shopify/Product/9",
+      "title": "Doğal Taş Lavabo",
+      "handle": "dogal-tas-lavabo",
+      "description": "El işçiliği doğal taş lavabo",
+      "vendor": "Vitrifiye Premium",
+      "product_type": "Lavabo",
+      "tags": ["dogal", "tas", "el_isciligi", "lavabo"],
+      "price": "4500.00",
+      "compare_at_price": "6000.00",
+      "sku": "LAV-DOG-001",
+      "inventory_quantity": 10,
+      "images": [
+        {
+          "src": "https://example.com/lavabo-tas-1.jpg",
+          "alt": "Doğal Taş Lavabo"
+        }
+      ],
+      "metafields": {
+        "custom": {
+          "room_type": "banyo",
+          "style": "dogal",
+          "color": "bej",
+          "material": "dogal_tas",
+          "dimensions": "50x40x15 cm",
+          "installation_type": "tezgah_ustu",
+          "handmade": true,
+          "quiz_match_score": 0
+        }
+      }
+    },
+    {
+      "id": "gid://shopify/Product/10",
+      "title": "Renkli Mozaik Karo Seti",
+      "handle": "renkli-mozaik-karo-seti",
+      "description": "Çok renkli cam mozaik karo",
+      "vendor": "Vitrifiye Premium",
+      "product_type": "Karo",
+      "tags": ["renkli", "mozaik", "cam", "karo"],
+      "price": "85.00",
+      "compare_at_price": "110.00",
+      "sku": "KAR-REN-001",
+      "inventory_quantity": 200,
+      "images": [
+        {
+          "src": "https://example.com/karo-mozaik-1.jpg",
+          "alt": "Renkli Mozaik Karo Seti"
+        }
+      ],
+      "metafields": {
+        "custom": {
+          "room_type": "banyo",
+          "style": "modern",
+          "color": "renkli",
+          "material": "cam",
+          "dimensions": "30x30 cm",
+          "finish": "parlak",
+          "unit": "pano",
+          "colors": ["mavi", "yesil", "sari", "turuncu"],
+          "quiz_match_score": 0
+        }
+      }
+    }
+  ],
+  "quiz_questions": [
+    {
+      "id": 1,
+      "question_text": "Hangi mekan için ürün arıyorsunuz?",
+      "question_type": "single_choice",
+      "order": 1,
+      "options": [
+        {
+          "value": "banyo",
+          "label": "Banyo",
+          "imageUrl": "/quiz-images/banyo-modern.jpg"
+        },
+        {
+          "value": "mutfak",
+          "label": "Mutfak",
+          "imageUrl": "/quiz-images/mekan-mutfak.jpg"
+        },
+        {
+          "value": "tuvalet",
+          "label": "Tuvalet",
+          "imageUrl": "/quiz-images/mekan-tuvalet.jpg"
+        },
+        {
+          "value": "lavabo",
+          "label": "Lavabo",
+          "imageUrl": "/quiz-images/mekan-lavabo.jpg"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "question_text": "Hangi stil size daha çok hitap ediyor?",
+      "question_type": "single_choice",
+      "order": 2,
+      "options": [
+        {
+          "value": "modern",
+          "label": "Modern & Minimalist",
+          "imageUrl": "/quiz-images/banyo-modern.jpg"
+        },
+        {
+          "value": "klasik",
+          "label": "Klasik & Şık",
+          "imageUrl": "/quiz-images/banyo-klasik.jpg"
+        },
+        {
+          "value": "endustriyel",
+          "label": "Endüstriyel & Çağdaş",
+          "imageUrl": "/quiz-images/banyo-endustriyel.jpg"
+        },
+        {
+          "value": "dogal",
+          "label": "Doğal & Organik",
+          "imageUrl": "/quiz-images/banyo-dogal.jpg"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "question_text": "Hangi renk paletini tercih edersiniz?",
+      "question_type": "single_choice",
+      "order": 3,
+      "options": [
+        {
+          "value": "beyaz",
+          "label": "Beyaz & Açık Tonlar",
+          "imageUrl": "/quiz-images/renk-beyaz.jpg"
+        },
+        {
+          "value": "gri",
+          "label": "Gri & Nötr Tonlar",
+          "imageUrl": "/quiz-images/renk-gri.jpg"
+        },
+        {
+          "value": "bej",
+          "label": "Bej & Toprak Tonları",
+          "imageUrl": "/quiz-images/renk-bej.jpg"
+        },
+        {
+          "value": "siyah",
+          "label": "Siyah & Koyu Tonlar",
+          "imageUrl": "/quiz-images/renk-siyah.jpg"
+        },
+        {
+          "value": "renkli",
+          "label": "Renkli & Canlı",
+          "imageUrl": "/quiz-images/renk-renkli.jpg"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "question_text": "Bütçe aralığınız nedir?",
+      "question_type": "single_choice",
+      "order": 4,
+      "options": [
+        {
+          "value": "ekonomik",
+          "label": "Ekonomik",
+          "min": 0,
+          "max": 500000
+        },
+        {
+          "value": "orta",
+          "label": "Orta Segment",
+          "min": 500000,
+          "max": 1500000
+        },
+        {
+          "value": "premium",
+          "label": "Premium",
+          "min": 1500000,
+          "max": 3000000
+        },
+        {
+          "value": "lux",
+          "label": "Lüks",
+          "min": 3000000,
+          "max": 10000000
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "question_text": "Mekanınızın boyutu nasıl?",
+      "question_type": "single_choice",
+      "order": 5,
+      "options": [
+        {
+          "value": "kucuk",
+          "label": "Küçük (2-4 m²)"
+        },
+        {
+          "value": "orta",
+          "label": "Orta (4-8 m²)"
+        },
+        {
+          "value": "buyuk",
+          "label": "Büyük (8+ m²)"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "question_text": "Hangi ürünlere ihtiyacınız var?",
+      "question_type": "multiple_choice",
+      "order": 6,
+      "options": [
+        {
+          "value": "lavabo",
+          "label": "Lavabo"
+        },
+        {
+          "value": "klozet",
+          "label": "Klozet"
+        },
+        {
+          "value": "batarya",
+          "label": "Batarya"
+        },
+        {
+          "value": "dus",
+          "label": "Duş Sistemi"
+        },
+        {
+          "value": "karo",
+          "label": "Karo/Fayans"
+        },
+        {
+          "value": "dolap",
+          "label": "Banyo Dolabı"
+        },
+        {
+          "value": "aksesuar",
+          "label": "Aksesuarlar"
+        }
+      ]
+    }
+  ],
+  "metafield_definitions": {
+    "product": {
+      "namespace": "custom",
+      "key": "room_type",
+      "name": "Mekan Tipi",
+      "description": "Ürünün kullanılacağı mekan tipi",
+      "type": "single_line_text_field"
+    },
+    "product_style": {
+      "namespace": "custom",
+      "key": "style",
+      "name": "Stil",
+      "description": "Ürünün tasarım stili",
+      "type": "single_line_text_field"
+    },
+    "product_color": {
+      "namespace": "custom",
+      "key": "color",
+      "name": "Renk",
+      "description": "Ürünün rengi",
+      "type": "single_line_text_field"
+    },
+    "quiz_match_score": {
+      "namespace": "custom",
+      "key": "quiz_match_score",
+      "name": "Quiz Eşleşme Skoru",
+      "description": "Quiz sonucuna göre hesaplanan eşleşme skoru",
+      "type": "number_integer"
+    }
+  }
+}

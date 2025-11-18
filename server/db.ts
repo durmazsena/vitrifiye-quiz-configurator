@@ -1,0 +1,362 @@
+import { readFileSync } from "fs";
+import { join } from "path";
+import { 
+  InsertUser, 
+  Product,
+  QuizQuestion,
+  InsertQuizResult,
+  QuizResult,
+  Configuration,
+  InsertConfiguration
+} from "../drizzle/schema";
+import { ENV } from './_core/env';
+
+// JSON data cache
+let _jsonData: any = null;
+let _productsCache: Product[] | null = null;
+let _quizQuestionsCache: QuizQuestion[] | null = null;
+let _quizResultsStorage: Map<number, QuizResult> = new Map();
+let _nextQuizResultId = 1;
+let _configurationsStorage: Map<number, Configuration> = new Map();
+let _nextConfigurationId = 1;
+
+function loadJsonData() {
+  if (!_jsonData) {
+    try {
+      // Load quiz questions from shopify-products.json
+      const shopifyFilePath = join(process.cwd(), "data", "shopify-products.json");
+      const shopifyContent = readFileSync(shopifyFilePath, "utf-8");
+      const shopifyData = JSON.parse(shopifyContent);
+      
+      // Load products from exported-products.json
+      const exportedFilePath = join(process.cwd(), "exported-products.json");
+      const exportedContent = readFileSync(exportedFilePath, "utf-8");
+      const exportedProducts = JSON.parse(exportedContent);
+      
+      _jsonData = {
+        products: exportedProducts,
+        quiz_questions: shopifyData.quiz_questions || [],
+      };
+      
+      console.log(`[Data] Loaded ${exportedProducts.length} products from exported-products.json`);
+      console.log(`[Data] Loaded ${_jsonData.quiz_questions.length} quiz questions from shopify-products.json`);
+    } catch (error) {
+      console.error("[Data] Failed to load JSON data:", error);
+      _jsonData = { products: [], quiz_questions: [] };
+    }
+  }
+  return _jsonData;
+}
+
+// Convert exported product format to our Product type
+function convertExportedProductToProduct(exportedProduct: any): Product {
+  // Category mapping - ensure it matches our enum
+  const categoryMap: Record<string, Product["category"]> = {
+    "lavabo": "lavabo",
+    "klozet": "klozet",
+    "batarya": "batarya",
+    "dus_seti": "dus_seti",
+    "dus": "dus_seti",
+    "ayna": "ayna",
+    "aksesuar": "aksesuar",
+    "karo": "karo",
+    "dolap": "diger",
+    "banyo_dolabi": "diger",
+  };
+  
+  const category = categoryMap[exportedProduct.category?.toLowerCase()] || "diger";
+  
+  // Style mapping
+  const styleMap: Record<string, Product["style"]> = {
+    "modern": "modern",
+    "klasik": "klasik",
+    "endustriyel": "endustriyel",
+    "dogal": "rustik",
+    "rustik": "rustik",
+    "minimalist": "modern",
+  };
+  
+  const style = exportedProduct.style ? styleMap[exportedProduct.style.toLowerCase()] || null : null;
+  
+  // Price is already in kuruş (150000 = 1500.00 TL)
+  const price = exportedProduct.price || 0;
+  
+  // Parse dimensions if it's a JSON string, then stringify again for storage
+  let dimensionsStr = null;
+  if (exportedProduct.dimensions) {
+    if (typeof exportedProduct.dimensions === 'string') {
+      try {
+        // Already a JSON string, validate and use as is
+        JSON.parse(exportedProduct.dimensions);
+        dimensionsStr = exportedProduct.dimensions;
+      } catch {
+        dimensionsStr = null;
+      }
+    } else {
+      // It's an object, stringify it
+      dimensionsStr = JSON.stringify(exportedProduct.dimensions);
+    }
+  }
+  
+  // Parse tags if it's a JSON string, then stringify again for storage
+  let tagsStr = null;
+  if (exportedProduct.tags) {
+    if (typeof exportedProduct.tags === 'string') {
+      try {
+        // Already a JSON string, validate and use as is
+        JSON.parse(exportedProduct.tags);
+        tagsStr = exportedProduct.tags;
+      } catch {
+        tagsStr = null;
+      }
+    } else if (Array.isArray(exportedProduct.tags)) {
+      // It's an array, stringify it
+      tagsStr = JSON.stringify(exportedProduct.tags);
+    }
+  }
+  
+  // Convert isActive from number to boolean
+  const isActive = exportedProduct.isActive === 1 || exportedProduct.isActive === true;
+  
+  // Parse dates
+  const createdAt = exportedProduct.createdAt ? new Date(exportedProduct.createdAt) : new Date();
+  const updatedAt = exportedProduct.updatedAt ? new Date(exportedProduct.updatedAt) : new Date();
+  
+  return {
+    id: exportedProduct.id,
+    shopifyId: exportedProduct.shopifyId || null,
+    title: exportedProduct.title || "",
+    description: exportedProduct.description || null,
+    category,
+    style,
+    color: exportedProduct.color || null,
+    material: exportedProduct.material || null,
+    price,
+    imageUrl: exportedProduct.imageUrl || null,
+    dimensions: dimensionsStr,
+    tags: tagsStr,
+    isActive,
+    createdAt,
+    updatedAt,
+  };
+}
+
+// Convert JSON quiz question to our QuizQuestion type
+function convertJsonQuestionToQuizQuestion(jsonQuestion: any): QuizQuestion {
+  const questionTypeMap: Record<string, QuizQuestion["questionType"]> = {
+    "single_choice": "single_choice",
+    "multiple_choice": "multiple_choice",
+    "range": "range",
+    "image_select": "image_select",
+  };
+  
+  // Map question ID to category based on question content
+  const categoryByQuestionId: Record<number, QuizQuestion["category"]> = {
+    1: "mekan_tipi",
+    2: "stil",
+    3: "renk",
+    4: "butce",
+    5: "boyut",
+    6: "ozellik",
+  };
+  
+  return {
+    id: jsonQuestion.id,
+    questionText: jsonQuestion.question_text || "",
+    questionType: questionTypeMap[jsonQuestion.question_type] || "single_choice",
+    category: categoryByQuestionId[jsonQuestion.id] || "ozellik",
+    options: JSON.stringify(jsonQuestion.options || []),
+    order: jsonQuestion.order || 0,
+    isActive: true,
+    createdAt: new Date(),
+  };
+}
+
+// ============ PRODUCT QUERIES ============
+
+export async function getAllProducts(): Promise<Product[]> {
+  if (!_productsCache) {
+    const jsonData = loadJsonData();
+    // exported-products.json is already an array of products
+    _productsCache = jsonData.products.map((p: any) => 
+      convertExportedProductToProduct(p)
+    );
+  }
+  return _productsCache.filter(p => p.isActive);
+}
+
+export async function getProductById(id: number): Promise<Product | undefined> {
+  const allProducts = await getAllProducts();
+  return allProducts.find(p => p.id === id);
+}
+
+export async function getProductsByCategory(category: string): Promise<Product[]> {
+  const allProducts = await getAllProducts();
+  return allProducts.filter(p => p.category === category);
+}
+
+export async function getProductsByFilters(filters: {
+  category?: string;
+  style?: string;
+  color?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  tags?: string[];
+}): Promise<Product[]> {
+  let products = await getAllProducts();
+  
+  if (filters.category) {
+    products = products.filter(p => p.category === filters.category);
+  }
+  
+  if (filters.style) {
+    products = products.filter(p => p.style === filters.style);
+  }
+  
+  if (filters.color) {
+    products = products.filter(p => p.color === filters.color);
+  }
+  
+  if (filters.minPrice !== undefined) {
+    products = products.filter(p => p.price >= filters.minPrice);
+  }
+  
+  if (filters.maxPrice !== undefined) {
+    products = products.filter(p => p.price <= filters.maxPrice);
+  }
+  
+  if (filters.tags && filters.tags.length > 0) {
+    products = products.filter(product => {
+      if (!product.tags) return false;
+      try {
+        const productTags = JSON.parse(product.tags);
+        return filters.tags!.some(tag => productTags.includes(tag));
+      } catch {
+        return false;
+      }
+    });
+  }
+  
+  return products;
+}
+
+// ============ QUIZ QUESTIONS QUERIES ============
+
+export async function getAllQuizQuestions(): Promise<QuizQuestion[]> {
+  if (!_quizQuestionsCache) {
+    const jsonData = loadJsonData();
+    _quizQuestionsCache = (jsonData.quiz_questions || []).map((q: any) => 
+      convertJsonQuestionToQuizQuestion(q)
+    ).sort((a: QuizQuestion, b: QuizQuestion) => a.order - b.order);
+  }
+  return _quizQuestionsCache.filter(q => q.isActive);
+}
+
+export async function getQuizQuestionsByCategory(category: string): Promise<QuizQuestion[]> {
+  const allQuestions = await getAllQuizQuestions();
+  return allQuestions.filter(q => q.category === category);
+}
+
+// ============ QUIZ RESULTS QUERIES (Memory Storage) ============
+
+export async function saveQuizResult(result: InsertQuizResult): Promise<number> {
+  const id = _nextQuizResultId++;
+  const quizResult: QuizResult = {
+    id,
+    userId: result.userId || null,
+    sessionId: result.sessionId,
+    email: result.email || null,
+    name: result.name || null,
+    answers: result.answers,
+    recommendedProducts: result.recommendedProducts || null,
+    score: result.score || null,
+    completedAt: result.completedAt || new Date(),
+  };
+  _quizResultsStorage.set(id, quizResult);
+  return id;
+}
+
+export async function getQuizResultById(id: number): Promise<QuizResult | undefined> {
+  return _quizResultsStorage.get(id);
+}
+
+export async function getQuizResultsByUserId(userId: number): Promise<QuizResult[]> {
+  return Array.from(_quizResultsStorage.values())
+    .filter(r => r.userId === userId)
+    .sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime());
+}
+
+export async function getQuizResultsBySessionId(sessionId: string): Promise<QuizResult[]> {
+  return Array.from(_quizResultsStorage.values())
+    .filter(r => r.sessionId === sessionId)
+    .sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime());
+}
+
+// ============ CONFIGURATION QUERIES (Memory Storage) ============
+
+export async function saveConfiguration(config: InsertConfiguration): Promise<number> {
+  const id = _nextConfigurationId++;
+  const configuration: Configuration = {
+    id,
+    userId: config.userId || null,
+    sessionId: config.sessionId || null,
+    quizResultId: config.quizResultId || null,
+    title: config.title,
+    roomType: config.roomType,
+    selectedProducts: config.selectedProducts,
+    totalPrice: config.totalPrice,
+    previewImageUrl: config.previewImageUrl || null,
+    isPublic: config.isPublic || false,
+    createdAt: config.createdAt || new Date(),
+    updatedAt: config.updatedAt || new Date(),
+  };
+  _configurationsStorage.set(id, configuration);
+  return id;
+}
+
+export async function updateConfiguration(id: number, updates: Partial<Configuration>): Promise<void> {
+  const existing = _configurationsStorage.get(id);
+  if (!existing) {
+    throw new Error("Configuration not found");
+  }
+  const updated: Configuration = {
+    ...existing,
+    ...updates,
+    updatedAt: new Date(),
+  };
+  _configurationsStorage.set(id, updated);
+}
+
+export async function getConfigurationById(id: number): Promise<Configuration | undefined> {
+  return _configurationsStorage.get(id);
+}
+
+export async function getConfigurationsByUserId(userId: number): Promise<Configuration[]> {
+  return Array.from(_configurationsStorage.values())
+    .filter(c => c.userId === userId)
+    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+}
+
+export async function getPublicConfigurations(limit: number = 20): Promise<Configuration[]> {
+  return Array.from(_configurationsStorage.values())
+    .filter(c => c.isPublic)
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, limit);
+}
+
+export async function deleteConfiguration(id: number): Promise<void> {
+  _configurationsStorage.delete(id);
+}
+
+// ============ USER QUERIES (Stub - not needed for quiz functionality) ============
+
+export async function upsertUser(user: InsertUser): Promise<void> {
+  // Stub implementation - not needed for quiz functionality
+  console.warn("[Database] upsertUser called but not implemented (using JSON storage)");
+}
+
+export async function getUserByOpenId(openId: string) {
+  // Stub implementation - not needed for quiz functionality
+  console.warn("[Database] getUserByOpenId called but not implemented (using JSON storage)");
+  return undefined;
+}
